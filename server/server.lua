@@ -1,14 +1,12 @@
 -- Framework Stuff ---------------------------------------------------------------
 local QBCore = exports['qb-core']:GetCoreObject()
 QBCore.Functions.CreateCallback('linden_outlawalert:isVehicleOwned', function(source, cb, plate)
-	exports.ghmattimysql:execute('SELECT plate FROM player_vehicles WHERE plate = @plate', {
-		['@plate'] = plate
-	}, function(result)
+	MySQL.query('SELECT plate FROM player_vehicles WHERE plate=?', { plate }, function(result)
 		if result[1] then
 			cb(true)
-		else
-			cb(false)
 		end
+		
+		cb(false)
 	end)
 end)
 
@@ -22,7 +20,6 @@ end
 
 -- Locale System ---------------------------------------------------------------
 
-
 local name = ('%s %s'):format(firstname, lastname)
 local title = ('%s %s'):format(rank, lastname)
 caller = name
@@ -30,7 +27,7 @@ info = title
 
 function getCaller(src)
 	local xPlayer = QBCore.Functions.GetPlayer(src)
-	return xPlayer.PlayerData.name
+	return xPlayer.PlayerData.charinfo.firstname .. " " .. xPlayer.PlayerData.charinfo.lastname
 end
 
 function getTitle(src)
@@ -62,15 +59,6 @@ local dispatchCodes = {
 	driveby = { displayCode = '10-13', description = _U('driveby'), isImportant = 0, recipientList = {'police'},
 	blipSprite = 649, blipColour = 84, blipScale = 1.5, infoM = 'fa-car', infoM2 = 'fa-palette' },
 }
-
-
---[[ Example custom alert
-RegisterCommand('testvangelico', function(playerId, args, rawCommand)
-	local data = {displayCode = '211', description = 'Robbery', isImportant = 0, recipientList = {'police'}, length = '10000', infoM = 'fa-info-circle', info = 'Vangelico Jewelry Store'}
-	local dispatchData = {dispatchData = data, caller = 'Alarm', coords = vector3(-633.9, -241.7, 38.1)}
-	TriggerEvent('wf-alerts:svNotify', dispatchData)
-end, false)
---]]
 
 
 local blacklistedIdentifiers = {
@@ -135,15 +123,7 @@ AddEventHandler('wf-alerts:svNotify911', function(message, caller, coords)
 		pData.infoM = 'fa-phone'
 		pData.info = message
 		pData.coords = vector3(coords.x, coords.y, coords.z)
-		pData.sprite, pData.colour, pData.scale =  480, 84, 2.0 -- radar_vip, blue
---[[	local xPlayers = ESX.GetPlayers()
-		for i= 1, #xPlayers do
-			local source = xPlayers[i]
-			local xPlayer = QBCore.Functions.GetPlayer(source)
-			if xPlayer.job.name == 'police' or xPlayer.job.name == 'ambulance' then
-				TriggerClientEvent('wf-alerts:clNotify', source, pData)
-			end
-		end]]
+		pData.sprite, pData.colour, pData.scale =  480, 84, 2.0
 		TriggerClientEvent('wf-alerts:clNotify', -1, pData) -- Send to all clients then check auth clientside?
 		TriggerEvent('mdt:newCall', message, caller, vector3(coords.x, coords.y, coords.z), false)
 	end

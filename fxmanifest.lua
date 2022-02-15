@@ -11,7 +11,16 @@ shared_scripts {
 }
 
 client_script 'client/main.lua'
-server_script 'server.lua'
+
+dependencies {
+    'qb-core',
+    'oxmysql'
+}
+
+server_scripts {
+    'server/server.lua',
+    '@oxmysql/lib/MySQL.lua'
+}
 
 ui_page {
     'html/alerts.html',
